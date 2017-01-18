@@ -1,731 +1,569 @@
-var ThView = function(arg){ 
+/*
 
- 
-this.d2r = function(d){returnd*Math.PI/180;}; 
+ *
 
- this.id = arg.id;											// id of parent element *required* 
+ * This program is licensed under the MIT License.
 
- 
-	// note: image file must be located at same origin 
+ * Copyright 2014, aike (@aike1000)
 
- 
-if (arg.file instanceof Array) { 
-this.file = arg.file;									// filename *required* 
+ *
+
+ */
 
 
-} else { 
 
-this.file = [arg.file]; 
-} 
+var ThView = function(arg) {
 
-this.interval = (arg.interval == undefined) ? 500 : arg.interval;		// animation rate 
+	this.d2r = function(d) { return d * Math.PI / 180; };
 
- 
-this.width = (arg.width == undefined) ? 500 : arg.width;				// pixel (500) 
+	this.id = arg.id;											// id of parent element *required*
 
- 
-this.height = (arg.height == undefined) ? 300 : arg.height;				// pixel (300) 
+	// note: image file must be located at same origin
 
- 
-this.rotation = (arg.rotation == undefined) ? false : arg.rotation;		// true/false (false) 
+	if (arg.file instanceof Array) {
 
- 
-this.speed = (arg.speed == undefined) ? 
-0.001 * 10 / 10 : 0.001 * arg.speed / 10;						// -100..-1, 1..100 (10) 
+		this.file = arg.file;									// filename *required*
 
-this.zoom = (arg.zoom == undefined) ? 70 : arg.zoom;					// 20 .. 130 (70) 
+	} else {
 
-this.firstview = (arg.firstview == undefined) ? 0 : this.d2r(-arg.firstview);// 0 .. 360 (0) 
+		this.file = [arg.file];
 
- 
-	this.degree = (arg.degree == undefined) ? [0, 0, 0]						// [0,0,0] .. [360,360,360] ([0,0,0]) 
+	}
 
- 
-					: [this.d2r(arg.degree[0]), this.d2r(arg.degree[1]), this.d2r(arg.degree[2])]; 
-
- 
-	this.rendererType = (arg.rendererType == undefined) ? 0 : arg.rendererType;	// 0,1,2 (0) 
-
- 
+	this.interval = (arg.interval == undefined) ? 500 : arg.interval;		// animation rate
 
 
-	///////// camera direction 
+
+	this.width = (arg.width == undefined) ? 500 : arg.width;				// pixel (500)
+
+	this.height = (arg.height == undefined) ? 300 : arg.height;				// pixel (300)
+
+	this.rotation = (arg.rotation == undefined) ? false : arg.rotation;		// true/false (false)
+
+	this.speed = (arg.speed == undefined) ?
+
+			0.001 * 10 / 10 : 0.001 * arg.speed / 10;						// -100..-1, 1..100 (10)
+
+	this.zoom = (arg.zoom == undefined) ? 70 : arg.zoom;					// 20 .. 130 (70)
+
+	this.firstview = (arg.firstview == undefined) ? 0 : this.d2r(-arg.firstview);// 0 .. 360 (0)
+
+	this.degree = (arg.degree == undefined) ? [0, 0, 0]						// [0,0,0] .. [360,360,360] ([0,0,0])
+
+					: [this.d2r(arg.degree[0]), this.d2r(arg.degree[1]), this.d2r(arg.degree[2])];
+
+	this.rendererType = (arg.rendererType == undefined) ? 0 : arg.rendererType;	// 0,1,2 (0)
 
 
-	this.pan = this.firstview; 
 
- 
-	this.tilt = 0; 
+	///////// camera direction
 
- 
-	this.cameraDir = new THREE.Vector3(Math.sin(this.pan), Math.sin(this.tilt), Math.cos(this.pan)); 
+	this.pan = this.firstview;
 
- 
-	this.oldPosition = {x:null, y:null}; 
+	this.tilt = 0;
 
- 
-	this.mousedown = false; 
+	this.cameraDir = new THREE.Vector3(Math.sin(this.pan), Math.sin(this.tilt), Math.cos(this.pan));
 
- 
-	this.moving = false; 
- 
-	///////// interval images 
+	this.oldPosition = {x:null, y:null};
 
- 
+	this.mousedown = false;
+
+	this.moving = false;
+
+
+
+	///////// interval images
+
 	this.imageNo = 0;
 
-	///////// parent element 
-	this.element = document.getElementById(this.id); 
 
- 
 
- 
+	///////// parent element
 
- 
-	///////// dual screen for HMD 
+	this.element = document.getElementById(this.id);
 
- 
-	if (arg.hmd) { 
 
- 
-		if (this.element.style.position === '') 
 
+	///////// dual screen for HMD
 
-			this.element.style.position = 'relative'; 
+	if (arg.hmd) {
 
- 
+		if (this.element.style.position === '')
 
+			this.element.style.position = 'relative';
 
-		this.width = Math.floor(arg.width / 2); 
-        
-        
-		arg.width = this.width; 
 
 
-		arg.id = arg.id + '_slave'; 
+		this.width = Math.floor(arg.width / 2);
 
+		arg.width = this.width;
 
-		arg.hmd = undefined; 
+		arg.id = arg.id + '_slave';
 
- 
-		var slavediv = document.createElement('div'); 
+		arg.hmd = undefined;
 
- 
-		slavediv.id = arg.id; 
 
- 
-		slavediv.style.position = 'absolute'; 
 
- 
-		slavediv.style.left = this.width + 'px'; 
+		var slavediv = document.createElement('div');
 
- 
-		slavediv.style.top = 0 + 'px'; 
+		slavediv.id = arg.id;
 
- 
-		this.element.appendChild(slavediv); 
+		slavediv.style.position = 'absolute';
 
- 
-		arg.element = slavediv; 
+		slavediv.style.left = this.width + 'px';
 
- 
- 
-		this.sync = new ThView(arg); 
+		slavediv.style.top = 0 + 'px';
 
- 
-		this.sync.sync = this; 
+		this.element.appendChild(slavediv);
 
- 
-		this.sync.isSlave = true; 
+		arg.element = slavediv;
 
- 
-	} 
 
- 
-	this.element.style.height = this.height + 'px'; 
 
- 
-	this.element.style.width = this.width + 'px'; 
+		this.sync = new ThView(arg);
 
- 
-	this.element.style.cursor = 'move'; 
+		this.sync.sync = this;
 
- 
- 
-	///////// call main process 
+		this.sync.isSlave = true;
 
- 
-	this.show(); 
+	}
 
- 
-} 
+	this.element.style.height = this.height + 'px';
 
+	this.element.style.width = this.width + 'px';
 
- 
-ThView.prototype.toggleRotation = function() { 
+	this.element.style.cursor = 'move';
 
- 
-	this.rotation = ! this.rotation; 
 
- 
-} 
 
+	///////// call main process
 
- 
-///////// drag callback 
+	this.show();
 
- 
-ThView.prototype.rotateCamera = function(x, y) { 
+}
 
- 
-	if (!this.mousedown) 
 
- 
-		return; 
 
- 
+ThView.prototype.toggleRotation = function() {
 
-	var pos = {x:x, y:y}; 
+	this.rotation = ! this.rotation;
 
- 
-	if (this.oldPosition.x === null) { 
+}
 
- 
-		this.oldPosition = pos; 
 
- 
-		return; 
 
- 
-	} 
+///////// drag callback
 
- 
-	this.pan -= (this.oldPosition.x - pos.x) * 0.005; 
+ThView.prototype.rotateCamera = function(x, y) {
 
- 
-	this.tilt -= (this.oldPosition.y - pos.y) * 0.004; 
+	if (!this.mousedown)
 
- 
-	var limit = Math.PI / 2 - 0.1; 
+		return;
 
- 
-	if (this.tilt > limit) this.tilt = limit; 
 
- 
-	if (this.tilt < -limit) this.tilt = -limit; 
 
+	var pos = {x:x, y:y};
 
+	if (this.oldPosition.x === null) {
 
+		this.oldPosition = pos;
 
-	this.cameraDir.x = Math.sin(this.pan) * Math.cos(this.tilt); 
+		return;
 
+	}
 
-	this.cameraDir.z = Math.cos(this.pan) * Math.cos(this.tilt); 
 
- 
-	this.cameraDir.y = Math.sin(this.tilt); 
 
+	this.pan -= (this.oldPosition.x - pos.x) * 0.005;
 
-	this.camera.lookAt(this.cameraDir); 
+	this.tilt -= (this.oldPosition.y - pos.y) * 0.004;
 
- 
-	if (this.sync) { 
+	var limit = Math.PI / 2 - 0.1;
 
- 
-		this.sync.camera.lookAt(this.cameraDir); 
+	if (this.tilt > limit) this.tilt = limit;
 
- 
-	} 
+	if (this.tilt < -limit) this.tilt = -limit;
 
-	this.oldPosition = pos; 
 
- 
 
- 
-	this.moving = true; 
+	this.cameraDir.x = Math.sin(this.pan) * Math.cos(this.tilt);
 
- 
-} 
- 
+	this.cameraDir.z = Math.cos(this.pan) * Math.cos(this.tilt);
 
- 
-ThView.prototype.setCameraDir = function(alpha, beta, gamma) { 
+	this.cameraDir.y = Math.sin(this.tilt);
 
- 
-	if (this.rotation) { 
+	this.camera.lookAt(this.cameraDir);
 
- 
-		this.rotation = false; 
 
- 
-	} 
 
- 
+	if (this.sync) {
 
- 
+		this.sync.camera.lookAt(this.cameraDir);
 
- 
-	switch (window.orientation) { 
+	}
 
- 
-		case 0: 
 
- 
-			this.mesh.rotation.x = this.degree[0] + Math.PI + Math.PI / 2; 
 
- 
-			this.mesh.rotation.y = this.degree[1]; 
+	this.oldPosition = pos;
 
- 
-			this.mesh.rotation.z = this.degree[2]; 
 
- 
-			this.camera.rotation.x = beta; 
 
- 
-			this.camera.rotation.y = gamma; 
+	this.moving = true;
 
- 
-			this.camera.rotation.z = alpha; 
+}
 
- 
-			break; 
 
- 
-		case 90: 
 
- 
-			this.mesh.rotation.x = this.degree[0] + Math.PI; 
+ThView.prototype.setCameraDir = function(alpha, beta, gamma) {
 
- 
-			this.mesh.rotation.y = this.degree[1] + alpha - Math.PI / 2; 
+	if (this.rotation) {
 
- 
-			this.mesh.rotation.z = this.degree[2]; 
+		this.rotation = false;
 
- 
-			this.camera.rotation.x = -gamma - Math.PI / 2; 
+	}
 
- 
-			this.camera.rotation.y = 0; 
 
- 
-			this.camera.rotation.z = -beta; 
 
- 
-			break; 
+	switch (window.orientation) {
 
- 
-		case -90: 
+		case 0:
 
- 
-			this.mesh.rotation.x = this.degree[0] + Math.PI; 
+			this.mesh.rotation.x = this.degree[0] + Math.PI + Math.PI / 2;
 
- 
-			this.mesh.rotation.y = this.degree[1] + alpha - Math.PI / 2; 
+			this.mesh.rotation.y = this.degree[1];
 
- 
-			this.mesh.rotation.z = this.degree[2] + 0; 
+			this.mesh.rotation.z = this.degree[2];
 
- 
-			this.camera.rotation.x = -(-gamma - Math.PI / 2); 
+			this.camera.rotation.x = beta;
 
- 
-			this.camera.rotation.y = 0; 
+			this.camera.rotation.y = gamma;
 
- 
-			this.camera.rotation.z = -beta + Math.PI; 
+			this.camera.rotation.z = alpha;
 
- 
-			break; 
+			break;
 
- 
-		case 180: 
+		case 90:
 
- 
-			this.mesh.rotation.x = this.degree[0] + Math.PI + Math.PI / 2; 
+			this.mesh.rotation.x = this.degree[0] + Math.PI;
 
- 
-			this.mesh.rotation.y = this.degree[1]; 
+			this.mesh.rotation.y = this.degree[1] + alpha - Math.PI / 2;
 
- 
-			this.mesh.rotation.z = this.degree[2]; 
+			this.mesh.rotation.z = this.degree[2];
 
- 
-			this.camera.rotation.x = -beta; 
+			this.camera.rotation.x = -gamma - Math.PI / 2;
 
- 
-			this.camera.rotation.y = -gamma; 
+			this.camera.rotation.y = 0;
 
- 
-			this.camera.rotation.z = alpha + Math.PI; 
+			this.camera.rotation.z = -beta;
 
- 
-			break; 
+			break;
 
- 
-		} 
+		case -90:
 
- 
-}; 
+			this.mesh.rotation.x = this.degree[0] + Math.PI;
 
+			this.mesh.rotation.y = this.degree[1] + alpha - Math.PI / 2;
 
- 
-///////// wheel callback 
+			this.mesh.rotation.z = this.degree[2] + 0;
 
- 
-ThView.prototype.zoomCamera = function(val) { 
+			this.camera.rotation.x = -(-gamma - Math.PI / 2);
 
- 
-	this.zoom += val * 0.1; 
+			this.camera.rotation.y = 0;
 
- 
-	if (this.zoom < 20) this.zoom = 20; 
+			this.camera.rotation.z = -beta + Math.PI;
 
- 
-	if (this.zoom > 130) this.zoom = 130; 
+			break;
 
- 
-	this.camera.fov = this.zoom; 
+		case 180:
 
- 
-	this.camera.updateProjectionMatrix(); 
+			this.mesh.rotation.x = this.degree[0] + Math.PI + Math.PI / 2;
 
- 
- 
-	if (this.sync) { 
+			this.mesh.rotation.y = this.degree[1];
 
- 
-		this.sync.camera.fov = this.zoom; 
+			this.mesh.rotation.z = this.degree[2];
 
- 
-		this.sync.camera.updateProjectionMatrix(); 
+			this.camera.rotation.x = -beta;
 
- 
-	} 
+			this.camera.rotation.y = -gamma;
 
- 
-} 
+			this.camera.rotation.z = alpha + Math.PI;
 
- 
- 
-///////// main process 
+			break;
 
- 
-ThView.prototype.show = function() { 
+		}
 
- 
-	var self = this; 
+};
 
- 
- 
-	///////// RENDERER 
 
- 
-	var renderer; 
 
- 
-	if (this.rendererType == 0) 
+///////// wheel callback
 
- 
-		renderer = new THREE.WebGLRenderer({ antialias:true }); 
+ThView.prototype.zoomCamera = function(val) {
 
- 
-	else if (this.rendererType == 1) 
+	this.zoom += val * 0.1;
 
- 
-		renderer = new THREE.CanvasRenderer({ antialias:true }); 
+	if (this.zoom < 20) this.zoom = 20;
 
- 
-	else 
+	if (this.zoom > 130) this.zoom = 130;
 
- 
-		renderer = new THREE.CSS3DRenderer({ antialias:true }); 
+	this.camera.fov = this.zoom;
 
- 
-	renderer.setSize(this.width, this.height); 
+	this.camera.updateProjectionMatrix();
 
- 
-	renderer.setClearColor(0x000000, 1); 
 
- 
-	this.element.appendChild(renderer.domElement);	// append to <DIV> 
 
- 
-	///////// callback setting 
+	if (this.sync) {
 
- 
-	var onmouseupOrg = document.onmouseup; 
+		this.sync.camera.fov = this.zoom;
 
- 
-	document.onmouseup = function() { 
+		this.sync.camera.updateProjectionMatrix();
 
- 
-		if (onmouseupOrg) 
+	}
 
- 
-			onmouseupOrg(); 
 
- 
-		self.mousedown = false; 
 
- 
-	}; 
+}
 
- 
-	this.element.onmousedown = function(e) {  
 
- 
-		self.mousedown = true; 
 
- 
-		self.oldPosition = {x:e.pageX, y:e.pageY}; 
 
- 
-	}; 
 
- 
-	this.element.onmousemove = function(e) { 
+///////// main process
 
- 
-		self.rotateCamera(e.pageX, e.pageY); 
+ThView.prototype.show = function() {
 
- 
-	}; 
+	var self = this;
 
- 
-	this.element.onclick = function() { 
 
- 
-		if (!self.moving) 
 
- 
-			self.toggleRotation(); 
+	///////// RENDERER
 
- 
-		self.moving = false; 
+	var renderer;
 
- 
-	}; 
+	if (this.rendererType == 0)
 
- 
-	// chrome / safari / IE 
+		renderer = new THREE.WebGLRenderer({ antialias:true });
 
- 
-	this.element.onmousewheel = function(e) { 
+	else if (this.rendererType == 1)
 
- 
-		var delta = e.deltaY ? e.deltaY : e.wheelDelta ? -e.wheelDelta : -e.wheelDeltaY * 0.2; 
+		renderer = new THREE.CanvasRenderer({ antialias:true });
 
- 
-		self.zoomCamera(delta); 
+	else
 
- 
-		e.preventDefault(); 
+		renderer = new THREE.CSS3DRenderer({ antialias:true });
 
- 
-	}; 
+	renderer.setSize(this.width, this.height);
 
- 
-	// firefox 
+	renderer.setClearColor(0x000000, 1);
 
- 
-	this.element.addEventListener("DOMMouseScroll", function(e) { 
+	this.element.appendChild(renderer.domElement);	// append to <DIV>
 
- 
-		self.zoomCamera(e.detail * 5); 
 
- 
-		e.preventDefault(); 
 
- 
-	}); 
+	///////// callback setting
 
- 
-	// iOS 
+	var onmouseupOrg = document.onmouseup;
 
- 
-	window.addEventListener("deviceorientation", function(e){ 
+	document.onmouseup = function() {
 
- 
-		if (e.alpha) { 
+		if (onmouseupOrg)
 
- 
-			self.setCameraDir(self.d2r(e.alpha), self.d2r(e.beta), self.d2r(e.gamma)); 
+			onmouseupOrg();
 
- 
-		} 
+		self.mousedown = false;
 
- 
-	}); 
+	};
 
- 
-	window.addEventListener("orientationchange", function(e){ 
+	this.element.onmousedown = function(e) { 
 
- 
-	}); 
+		self.mousedown = true;
 
- 
-	///////// SCENE 
+		self.oldPosition = {x:e.pageX, y:e.pageY};
 
- 
-	var scene = new THREE.Scene(); 
+	};
 
- 
-	///////// CAMERA 
+	this.element.onmousemove = function(e) {
 
- 
-	this.camera = new THREE.PerspectiveCamera(this.zoom, this.width / this.height); 
+		self.rotateCamera(e.pageX, e.pageY);
 
- 
-	this.camera.position = new THREE.Vector3(0, 0, 0); 
+	};
 
- 
-	this.camera.lookAt(this.cameraDir); 
+	this.element.onclick = function() {
 
- 
-	this.camera.rotation.order = 'ZXY'; 
+		if (!self.moving)
 
- 
-	scene.add(this.camera); 
-	///////// LIGHT 
+			self.toggleRotation();
 
- 
-	var light = new THREE.AmbientLight(0xffffff); 
+		self.moving = false;
 
- 
-	scene.add(light); 
+	};
 
- 
-	///////// SPHERE 
 
- 
-	var geometry = new THREE.SphereGeometry(100, 32, 16); 
 
- 
+	// chrome / safari / IE
 
- 
-	///////// TEXTURE 
+	this.element.onmousewheel = function(e) {
 
- 
-	this.texture = new Array(this.file.length); 
+		var delta = e.deltaY ? e.deltaY : e.wheelDelta ? -e.wheelDelta : -e.wheelDeltaY * 0.2;
 
- 
-	for (var i = 0; i < this.texture.length; i++) { 
+		self.zoomCamera(delta);
 
- 
-		this.texture[i] = THREE.ImageUtils.loadTexture(this.file[i]); 
+		e.preventDefault();
 
- 
-		this.texture[i].flipY = false; 
+	};
 
-	} 
+	// firefox
 
-  
-	///////// MATERIAL 
+	this.element.addEventListener("DOMMouseScroll", function(e) {
 
- 
-	this.material = new THREE.MeshPhongMaterial({ 
+		self.zoomCamera(e.detail * 5);
 
- 
-		side: THREE.DoubleSide, 
+		e.preventDefault();
 
- 
-		color: 0xffffff, specular: 0xcccccc, shininess:50, ambient: 0xffffff, 
+	});
 
- 
-		map: this.texture[this.imageNo] }); 
- 
-	//// texture animation 
 
- 
-	if ((this.texture.length > 1) && (!self.isSlave)) { 
 
- 
-		setInterval(function() { 
+	// iOS
 
- 
-			self.imageNo = (self.imageNo + 1) % self.texture.length; 
+	window.addEventListener("deviceorientation", function(e){
 
- 
-			self.material.map = self.texture[self.imageNo]; 
+		if (e.alpha) {
 
- 
-			if (self.sync) { 
+			self.setCameraDir(self.d2r(e.alpha), self.d2r(e.beta), self.d2r(e.gamma));
 
- 
-				self.sync.material.map = self.sync.texture[self.imageNo]; 
+		}
 
- 
-			} 
+	});
 
- 
-		}, this.interval); 
+	window.addEventListener("orientationchange", function(e){
 
- 
-	} 
+	});
 
-	///////// MESH 
 
- 
-	this.mesh = new THREE.Mesh(geometry, this.material); 
 
- 
-	if (this.rendererType == 0) 
+	///////// SCENE
 
- 
-		this.mesh.rotation.x += Math.PI; 
+	var scene = new THREE.Scene();
 
- 
-	this.mesh.rotation.x += this.degree[0]; 
 
- 
-	this.mesh.rotation.y += this.degree[1]; 
 
- 
-	this.mesh.rotation.z += this.degree[2]; 
+	///////// CAMERA
 
- 
-	scene.add(this.mesh); 
+	this.camera = new THREE.PerspectiveCamera(this.zoom, this.width / this.height);
 
-  
+	this.camera.position = new THREE.Vector3(0, 0, 0);
 
- 
-	///////// Draw Loop 
+	this.camera.lookAt(this.cameraDir);
 
- 
-	function render() { 
+	this.camera.rotation.order = 'ZXY';
 
- 
-		requestAnimationFrame(render); 
+	scene.add(this.camera);
 
- 
-		if ((self.rotation) && (!self.isSlave)) { 
 
- 
-			self.mesh.rotation.y += self.speed; 
 
- 
-			if (self.sync) { 
+	///////// LIGHT
 
- 
-				self.sync.mesh.rotation.y += self.speed; 
+	var light = new THREE.AmbientLight(0xffffff);
 
- 
-			} 
+	scene.add(light);
 
- 
-		} 
 
- 
- 
-		renderer.render(scene, self.camera); 
 
- 
-	}; 
+	///////// SPHERE
 
- 
-	render(); 
+	var geometry = new THREE.SphereGeometry(100, 32, 16);
 
- 
-} 
+
+
+	///////// TEXTURE
+
+	this.texture = new Array(this.file.length);
+
+	for (var i = 0; i < this.texture.length; i++) {
+
+		this.texture[i] = THREE.ImageUtils.loadTexture(this.file[i]);
+
+		this.texture[i].flipY = false;
+
+	}
+
+
+
+	///////// MATERIAL
+
+	this.material = new THREE.MeshPhongMaterial({
+
+		side: THREE.DoubleSide,
+
+		color: 0xffffff, specular: 0xcccccc, shininess:50, ambient: 0xffffff,
+
+		map: this.texture[this.imageNo] });
+
+
+
+	//// texture animation
+
+	if ((this.texture.length > 1) && (!self.isSlave)) {
+
+		setInterval(function() {
+
+			self.imageNo = (self.imageNo + 1) % self.texture.length;
+
+			self.material.map = self.texture[self.imageNo];
+
+			if (self.sync) {
+
+				self.sync.material.map = self.sync.texture[self.imageNo];
+
+			}
+
+		}, this.interval);
+
+	}
+
+
+
+	///////// MESH
+
+	this.mesh = new THREE.Mesh(geometry, this.material);
+
+	if (this.rendererType == 0)
+
+		this.mesh.rotation.x += Math.PI;
+
+	this.mesh.rotation.x += this.degree[0];
+
+	this.mesh.rotation.y += this.degree[1];
+
+	this.mesh.rotation.z += this.degree[2];
+
+	scene.add(this.mesh);
+
+
+
+	///////// Draw Loop
+
+	function render() {
+
+		requestAnimationFrame(render);
+
+		if ((self.rotation) && (!self.isSlave)) {
+
+			self.mesh.rotation.y += self.speed;
+
+			if (self.sync) {
+
+				self.sync.mesh.rotation.y += self.speed;
+
+			}
+
+		}
+
+		renderer.render(scene, self.camera);
+
+	};
+
+	render();
+
+}
