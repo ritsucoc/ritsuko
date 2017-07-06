@@ -8,6 +8,8 @@ this.d2r = function(d){returnd*Math.PI/180;};
  
 	// note: image file must be located at same origin 
 
+	document.write("Javasqriptha
+		       ");
  
 if (arg.file instanceof Array) { 
 this.file = arg.file;									// filename *required* 
