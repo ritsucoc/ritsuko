@@ -38,7 +38,7 @@ this.zoom = (arg.zoom == undefined) ? 70 : arg.zoom;					// 20 .. 130 (70)
 this.firstview = (arg.firstview == undefined) ? 0 : this.d2r(-arg.firstview);// 0 .. 360 (0) 
 
  
-	this.degree = (arg.degree == undefined) ? [0, 0, 0]						// [0,0,0] .. [360,360,360] ([0,0,0]) 
+	this.degree = (arg.degree == undefined) ? [0, 93.5, 0]						// [0,0,0] .. [360,360,360] ([0,0,0]) 
 
  
 					: [this.d2r(arg.degree[0]), this.d2r(arg.degree[1]), this.d2r(arg.degree[2])]; 
